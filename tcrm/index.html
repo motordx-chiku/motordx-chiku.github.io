@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>TCRM｜トラック整備専用の業務管理｜MotorDX Works</title>
+<meta name="description" content="トラック整備工場向けに、作業の進捗・予実と車検期限を一つの仕組みで管理する業務システム。いまの整備ソフトはそのままで導入できます。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Noto+Serif+JP:wght@600&display=swap">
+<style>
+  /* motordxworks.com のトークンに合わせる（--red / --ink / --gray / --line / --bg / --navy）。会社サイトに合わせて明るい1テーマで作る */
+  :root {
+    color-scheme: light;
+    --paper: #F4F5F7;
+    --surface: #FFFFFF;
+    --ink: #14181C;
+    --muted: #686D73;
+    --line: #DDE1E6;
+    --accent: #990000;
+    --accent-dark: #7A0000;
+    --accent-ink: #990000;
+    --accent-tint: #FBEEEE;
+    --on-accent: #FFFFFF;
+    --navy: #1F4E79;
+    --band: #14181C;
+    --on-band: #F4F5F7;
+    --band-muted: #C3CBD3;
+    --bezel: #2C333A;
+    --dai: #E5484D;
+    --chu: #3E9B4F;
+    --sho: #F0BE2A;
+    --display: "Noto Sans JP", "Yu Gothic", "Meiryo", sans-serif;
+    --body: "Noto Sans JP", "Yu Gothic", "Meiryo", sans-serif;
+    --num: "Noto Sans JP", "Yu Gothic", "Meiryo", sans-serif;
+    --serif: "Noto Serif JP", "Yu Mincho", serif;
+  }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.9;
+         -webkit-font-smoothing: antialiased; }
+  h1, h2, h3 { font-family: var(--display); line-height: 1.35; text-wrap: balance; margin: 0; }
+  p { margin: 0; }
+  a { color: inherit; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding-inline: 24px; }
+  @media (max-width: 600px) { .wrap { padding-inline: 16px; } }
+
+  /* ヘッダー */
+  .top { background: var(--accent); color: #fff; }
+  .top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 14px; }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .logo { font-family: var(--serif); font-weight: 600; font-size: 15px; background: #fff; color: var(--ink); padding: 6px 12px; border-radius: 3px; }
+  .product { font-weight: 700; font-size: 12px; letter-spacing: .5em; }
+  
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; border-radius: 3px;
+         background: var(--accent); color: var(--on-accent); font-family: var(--display); font-weight: 900;
+         text-decoration: none; cursor: pointer; padding: 10px 18px; font-size: 15px; }
+  .btn:focus-visible, .shot:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px solid var(--navy); outline-offset: 3px; }
+  .top .btn { background: #fff; color: var(--accent); }
+  .btn.big { padding: 16px 28px; font-size: 18px; }
+
+  /* 1. ファーストビュー */
+  .hero { background: var(--accent) repeating-linear-gradient(135deg, rgba(0,0,0,.07) 0 2px, transparent 2px 11px); color: #fff; padding-block: 56px 72px; overflow: hidden; }
+  .hero .wrap { display: grid; justify-items: center; text-align: center; }
+  .badge { display: inline-block; font-family: var(--display); font-weight: 900; font-size: 15px; letter-spacing: .08em;
+           border: 2px solid #fff; color: #fff; border-radius: 3px; padding: 2px 12px; }
+  .badge sup { font-size: 11px; margin-left: 2px; }
+  .hero .fn { margin-top: 32px; font-size: 12px; line-height: 1.7; color: rgba(255,255,255,.85); max-width: 46em; text-align: left; }
+  .hero h1 { font-size: clamp(34px, 5.4vw, 64px); font-weight: 900; margin-top: 18px; letter-spacing: .02em; line-height: 1.3; }
+  .hero h1 .nw { display: inline-block; }
+  .hero h1::after { content: ""; display: block; width: 64px; height: 4px; background: #fff; margin: 22px 0 0; }
+  /* TCRM のロゴ（ボードの上段と同じマーク：回る矢印＋大型トラック。タイルはタブのアイコンと同じ緑） */
+  .lockup { display: flex; align-items: center; justify-content: center; gap: 28px; margin-top: 22px; text-align: left; }
+  .tcrm { display: flex; align-items: center; gap: 12px; padding-right: 28px; border-right: 2px solid rgba(255,255,255,.45); }
+  .tcrm .mark { width: 64px; height: 64px; background: #0F766E; border-radius: 14px; fill: #fff; flex: none;
+                box-shadow: 0 0 0 3px rgba(255,255,255,.9); }
+  .tcrm .mark .s { fill: none; stroke: #fff; stroke-width: 2.4; stroke-linecap: round; }
+  .tcrm span { font-weight: 900; font-size: 34px; letter-spacing: .12em; line-height: 1; }
+  .lockup h1 { margin-top: 0; font-size: clamp(30px, 4.1vw, 52px); }
+  .nw { white-space: nowrap; }
+  /* テロップ：斜めに切った白い帯を3本、少しずつずらして重ねる */
+  .telop { list-style: none; margin: 36px 0 0; padding: 0; display: grid; gap: 14px; justify-items: center; }
+  .telop li { background: #fff; color: var(--ink); transform: skewX(-12deg); padding: 12px 30px; max-width: min(100%, 860px);
+              box-shadow: 6px 6px 0 rgba(0,0,0,.18); }
+  .telop li:nth-child(1) { margin-right: 48px; }
+  .telop li:nth-child(3) { margin-left: 48px; }
+  .telop li > span { display: block; transform: skewX(12deg); font-size: 15px; line-height: 1.6; text-align: left; }
+  .telop b { display: block; color: var(--accent); font-weight: 900; font-size: 22px; font-style: italic; }
+  .sizes { display: flex; gap: 6px; align-items: center; margin-top: 10px; color: inherit; font-size: 12px; }
+  .sizes i { font-style: normal; font-family: var(--display); font-weight: 700; font-size: 12px; color: var(--ink);
+             background: var(--c); border-radius: 4px; padding: 0 7px; }
+  figure { margin: 0; }
+
+
+  /* 画面（タブレットの額） */
+  .shot { display: block; width: 100%; padding: 0; border: 0; background: none; cursor: zoom-in; text-align: left; color: inherit; font: inherit; }
+  .shot .bezel { background: var(--bezel); border-radius: 16px; padding: 10px; box-shadow: 0 18px 40px rgba(8, 14, 22, .28); }
+  .shot img { display: block; width: 100%; height: auto; border-radius: 8px; }
+  figcaption { font-size: 13px; line-height: 1.7; color: var(--muted); margin-top: 10px; }
+  figure { margin: 0; min-width: 0; }
+  .fig-h { margin: 0 0 12px; font-family: var(--display); font-weight: 900; font-size: 17px; line-height: 1.55; padding-left: 12px; border-left: 4px solid var(--accent); text-wrap: pretty; }
+
+  /* 共通の段 */
+  section { padding-block: 72px; }
+  .eyebrow { font-family: var(--display); font-weight: 700; font-size: 12px; letter-spacing: .3em; color: var(--accent-ink); }
+  .em { color: var(--accent); }
+  .ib { display: inline-block; }
+  .sec-h { font-size: clamp(26px, 3.2vw, 36px); font-weight: 900; margin-top: 8px; }
+  .lead { color: var(--muted); margin-top: 12px; max-width: 42em; }
+
+  /* 2. 悩み */
+  .pains { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 32px; }
+  .pain h3 { font-size: 19px; font-weight: 900; line-height: 1.5; }
+  .pain p { font-size: 15px; color: var(--muted); }
+  .pain { background: var(--surface); border: 1px solid var(--line); border-top: 4px solid var(--accent); border-radius: 4px; padding: 22px 22px 24px; display: grid; gap: 10px; align-content: start; }
+
+  /* 3. 実話 */
+  .story { background: var(--surface); border-block: 1px solid var(--line); }
+  .quote { font-size: clamp(24px, 3vw, 34px); font-weight: 900; margin-top: 10px; max-width: 24em; }
+  .who { color: var(--muted); margin-top: 10px; font-size: 14px; }
+  .timeline { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; margin-top: 36px; border-top: 2px solid var(--line); }
+  .step { padding: 22px 24px 0 0; position: relative; display: grid; gap: 10px; align-content: start; }
+  .step + .step { padding-left: 24px; border-left: 1px solid var(--line); }
+  .step::before { content: ""; position: absolute; top: -8px; left: 0; width: 14px; height: 14px; border-radius: 50%; background: var(--line); }
+  .step + .step::before { left: 24px; }
+  .step.now::before { background: var(--accent); }
+  .step.next::before { background: var(--surface); border: 2px solid var(--accent); }
+  .step h3 { font-size: 18px; font-weight: 900; }
+  .step p { font-size: 15px; }
+
+  /* 4. 解決 */
+  .point { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 48px; margin-top: 48px; align-items: start; }
+  .point + .point { margin-top: 80px; }
+  .point .num { font-family: var(--num); font-weight: 900; font-size: 13px; letter-spacing: .3em; color: var(--accent-ink); }
+  .point h3 { font-size: clamp(22px, 2.6vw, 28px); font-weight: 900; margin-top: 4px; }
+  .point p { margin-top: 16px; }
+  .point p + p { margin-top: 10px; }
+  .shots { display: grid; gap: 28px; }
+  .tbl-wrap { overflow-x: auto; margin-top: 24px; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--surface); border-radius: 10px; overflow: hidden; }
+  th, td { padding: 10px 14px; border-bottom: 1px solid var(--line); text-align: left; }
+  th { font-family: var(--display); font-weight: 700; font-size: 13px; color: var(--muted); }
+  td.m { text-align: center; font-family: var(--display); font-weight: 900; font-size: 17px; width: 5.5em; }
+  th.m { text-align: center; }
+  th.ours, td.ours { background: var(--accent-tint); color: var(--accent); }
+  td.no { color: var(--muted); font-weight: 700; }
+  tr:last-child td { border-bottom: 0; }
+
+  /* 5. 安心 */
+  .safe { background: var(--band); color: var(--on-band); }
+  .safe .eyebrow { color: var(--band-muted); }
+  .safe .lead { color: var(--band-muted); }
+  .assure { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; margin-top: 36px; }
+  .assure > div { display: grid; gap: 10px; align-content: start; border-top: 3px solid var(--accent); padding-top: 18px; }
+  .assure h3 { font-size: 20px; font-weight: 900; }
+  .assure p { color: var(--band-muted); font-size: 15px; }
+  .rate { font-family: var(--num); font-weight: 900; font-size: 60px; line-height: 1; color: #fff; }
+  .rate small { font-size: 24px; }
+  .rate small:first-child { margin-right: 10px; }
+  .safe .shot { margin-top: 44px; max-width: 640px; }
+  .safe .shot figcaption { color: var(--band-muted); }
+
+  /* 6. 行動 */
+  .cta .box { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 40px;
+              display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 40px; }
+  .lead + .lead { margin-top: 10px; }
+  .note { margin-top: 16px; font-size: 14px; color: var(--muted); }
+  .mail { align-self: center; display: grid; gap: 14px; justify-items: start; background: var(--paper);
+          border: 1px solid var(--line); border-radius: 12px; padding: 32px; }
+  .mail-h { font-weight: 700; }
+  .addr { font-size: 15px; }
+  .mail .note { margin-top: 0; }
+  .sign { margin-top: 28px; font-family: var(--display); font-weight: 700; }
+  .sign small { display: block; font-family: var(--body); font-weight: 400; color: var(--muted); font-size: 13px; }
+
+  footer { padding-block: 28px 40px; color: var(--muted); font-size: 12px; }
+
+  /* 拡大表示 */
+  dialog.zoom { border: 0; padding: 0; background: transparent; max-width: min(1400px, 96vw); width: 96vw; }
+  dialog.zoom::backdrop { background: rgba(5, 9, 14, .82); }
+  dialog.zoom img { display: block; width: 100%; height: auto; border-radius: 8px; }
+  dialog.zoom p { color: #E7ECF1; font-size: 13px; margin-top: 8px; }
+  dialog.zoom button { position: absolute; top: 8px; right: 8px; background: var(--accent); color: #fff; border: 0; border-radius: 8px; padding: 6px 12px; font: inherit; cursor: pointer; }
+
+  @media (max-width: 860px) {
+    .point, .cta .box { grid-template-columns: 1fr; gap: 32px; }
+    .lockup { flex-direction: column; gap: 18px; text-align: center; }
+    .tcrm { padding-right: 0; border-right: 0; }
+    .lockup h1::after { margin-inline: auto; }
+    .telop li:nth-child(n) { margin: 0; padding: 10px 18px; }
+    .telop b { font-size: 19px; }
+    .pains, .assure, .timeline { grid-template-columns: 1fr; }
+    .timeline { border-top: 0; border-left: 2px solid var(--line); gap: 24px; margin-left: 6px; }
+    .step, .step + .step { padding: 0 0 0 24px; border-left: 0; }
+    .step::before, .step + .step::before { top: 6px; left: -8px; }
+    .cta .box { padding: 24px; }
+    section { padding-block: 56px; }
+  }
+  @media (max-width: 480px) { .mail { padding: 22px; } .mail .btn { width: 100%; } }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand"><span class="logo">MotorDX Works</span></div>
+    <a class="btn" href="#contact">お問い合わせ</a>
+  </div>
+</header>
+
+<section class="hero" aria-labelledby="h1">
+  <div class="wrap">
+    <span class="badge">業界初<sup>※</sup></span>
+    <div class="lockup">
+      <div class="tcrm" aria-label="TCRM"><svg class="mark" viewBox="0 0 24 24" aria-hidden="true"><g transform="translate(1.8 1.8) scale(.85)"><path class="s" d="M20 12a8 8 0 0 1-13.7 5.6"/><path class="s" d="M4 12a8 8 0 0 1 13.7-5.6"/><path d="M18.9 3.2v4.6h-4.6z"/><path d="M5.1 20.8v-4.6h4.6z"/><path d="M5.6 7.6h8.6v6H5.6z"/><path fill-rule="evenodd" d="M14.6 8.8h2.3l1.4 1.6v3.2h-3.7zM15.2 9.5h1.4l.9 1v.9h-2.3z"/><circle cx="7.4" cy="15.2" r="1.15"/><circle cx="9.9" cy="15.2" r="1.15"/><circle cx="16.4" cy="15.2" r="1.15"/></g></svg><span>TCRM</span></div>
+      <h1 id="h1"><span class="nw">トラック整備専用の</span><span class="nw">業務管理</span></h1>
+    </div>
+    <ul class="telop">
+      <li><span><b>進捗から「予実」まで見える化</b>いまどの工程にいるかだけでなく、作業が予定どおり進んでいるか、引き渡しまでに余裕があるかまでリアルタイムで把握できます。</span></li>
+      <li><span><b>顧客ごとの車検期日をスマート管理</b>車格や用途によって異なる複雑な満了期日をすっきり整理。未予約の車両を漏らさず拾い出し、前もったアプローチを可能にします。</span></li>
+      <li><span><b>いまの整備ソフトは「そのまま」</b>基幹システムの入れ替え・改修は不要。トラック専用の管理画面を「横にプラスするだけ」で導入できます。</span></li>
+    </ul>
+    <p class="fn">※ トラック整備工場向けに、車両を大型・中型・小型の車格に分けて、作業の進捗・予実と車検期限を一つの仕組みで管理する業務システムとして（2026年9月 当社調べ）</p>
+  </div>
+</section>
+
+<section aria-labelledby="pain-h">
+  <div class="wrap">
+    <div class="eyebrow">お悩み</div>
+    <h2 class="sec-h" id="pain-h">現場の管理で、こんな「壁」にぶつかっていませんか？</h2>
+    <div class="pains">
+      <div class="pain"><h3><span class="ib">工程は見えるが、</span><span class="ib"><span class="em">「時間の遅れ」</span>が見えない</span></h3><p>車両がどこにあるかは分かる。だが、作業が予定どおりか、引渡しに余裕があるかまでは把握できない。</p></div>
+      <div class="pain"><h3><span class="ib">目標に届かないが、</span><span class="ib"><span class="em">「原因」</span>が分からない</span></h3><p>月の目標台数や粗利に届かない。だが、どこで遅れやロスが発生したのか分析するデータが無い。</p></div>
+      <div class="pain"><h3><span class="ib">評価したいが、</span><span class="ib"><span class="em">「納得感のある材料」</span>が無い</span></h3><p>メカニックを定量的に評価したい。だが、感覚ではなく数字で納得してもらえる評価基準が無い。</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="story" aria-labelledby="story-h">
+  <div class="wrap">
+    <div class="eyebrow">某トラック整備工場の実話</div>
+    <h2 class="quote" id="story-h"><span class="ib">「感覚頼みの現場」から、</span><span class="ib"><span class="ib">「数字で確実な手が</span><span class="ib">打てる現場」へ</span></span></h2>
+    <p class="who">トラック整備工場 A社様</p>
+    <div class="timeline">
+      <div class="step">
+        <h3>これまで</h3>
+        <p>日々入ってくる整備をこなすことで精一杯で、今の稼働率が限界なのか、もっと効率を上げられるのかが分かりませんでした。そのため、月間目標に届かない月があっても、何が原因だったのかを十分に分析できていませんでした。また、車検満了が近いのに予約が入っていない車両に対しても、こちらから事前にアプローチできていませんでした。</p>
+      </div>
+      <div class="step now">
+        <h3>いま</h3>
+        <p>車種・走行距離ごとに作業時間が蓄積され、「この作業なら何時間」という見込み時間の基準が数字で見えるようになりました。</p>
+        <p>また、顧客別・車格・用途別に車検期限を可視化できるため、「前回入庫した車両が、今回はまだ予約されていない」ことが一発で把握できるようになりました。</p>
+      </div>
+      <div class="step next">
+        <h3>これからの変化</h3>
+        <p>作業時間が数値化されたことで、現場のメカニック自身が「時間をかけすぎていないか」を意識する良いきっかけが生まれています。未予約の車両も漏らさず拾えるようになり、入庫台数や粗利の着実な改善につなげていきます。</p>
+        <p>さらにデータが積み上がれば、メカニック別・車種別に生産性を分析し、真面目に頑張っている人を正当・定量的に評価できる体制を整えていきます。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="sol-h">
+  <div class="wrap">
+    <div class="eyebrow">解決の2つのポイント</div>
+    <h2 class="sec-h" id="sol-h"><span class="ib">今の整備ソフトはそのまま活用。</span><span class="ib"><span class="em">トラック整備に特化した管理機能</span>をプラス</span></h2>
+
+    <div class="point">
+      <div>
+        <div class="num">POINT 1</div>
+        <h3>進捗の、その先にある「予実」と「評価」</h3>
+        <p>一般的な整備ソフトで追えるのは「今どの工程にいるか」まで。TCRMは作業開始時に、同じ車種・走行距離帯の過去実績と、それに基づく作業見込み時間を表示します。</p>
+        <p>作業完了時には実際にかかった時間を自動記録。車両ごとのデータが積み上がるため、「目標に届かなかった原因分析」や「メカニックの正当な評価材料」として活用できます。</p>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>機能</th><th class="m">いまの<br>整備ソフト</th><th class="m ours">TCRM</th></tr></thead>
+            <tbody>
+              <tr><td>車両がどの工程にいるか</td><td class="m">○</td><td class="m ours">○</td></tr>
+              <tr><td>作業が予定どおり進んでいるか（予実）</td><td class="m no">－</td><td class="m ours">○</td></tr>
+              <tr><td>車種・走行距離ごとの作業時間の実績</td><td class="m no">－</td><td class="m ours">○</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="shots">
+        <figure>
+          <h4 class="fig-h">現場に行かなくても大丈夫。全車両のリアルタイム進捗がどこからでも一目で分かる</h4>
+          <button class="shot" type="button" data-zoom="board" aria-label="進捗ボードを拡大">
+            <div class="bezel"><img src="img/board.webp" width="1280" height="800" alt="進捗ボード。確定・入庫・作業・待機中・検査待ち・出庫待ちの列に、車両カードが車格の色つきで並ぶ。待機中の車には部品待ち・今日はここまで・外注待ちの理由が付く"></div>
+          </button>
+          <figcaption>進捗ボード：工場内の全車両を入庫から出庫までの工程別にカード型で一覧表示。リアルタイムで自動更新されるため、現場を離れていても最新の進捗状況をひと目で把握できます。</figcaption>
+        </figure>
+        <figure>
+          <h4 class="fig-h">過去の類似実績から見込み時間を自動提示！作業のムラを防ぎ、正確な評価・分析へ</h4>
+          <button class="shot" type="button" data-zoom="guide" aria-label="作業開始時の画面を拡大">
+            <div class="bezel"><img src="img/guide.webp" width="1000" height="470" alt="作業開始の画面。同じ車種・走行距離帯の実績37件を、短く終わる場合と時間がかかる場合の2つに分けて表示"></div>
+          </button>
+          <figcaption>作業開始の画面：カードを押して作業を始めると出る画面。同じ車種・走行距離帯の過去の実績を元に、見込み時間を「短く終わる場合」「時間がかかる場合」に分けて出します。点の1つ1つが過去の1台です。</figcaption>
+        </figure>
+        <figure>
+          <h4 class="fig-h">車両ごとの作業スケジュール遅延をタイムラインで早期検知。お客様との約束を確実に守る進行管理</h4>
+          <button class="shot" type="button" data-zoom="daily" aria-label="デイリーの画面を拡大">
+            <div class="bezel"><img src="img/daily.webp" width="1280" height="436" alt="予定カレンダーのデイリー。車両ごとに入庫予定から出庫予定までの帯と、その下に入庫・着手・完了・出庫の打刻が時刻付きで並ぶ"></div>
+          </button>
+          <figcaption>予定カレンダー（デイリー）：車両ごとに、入庫・出庫の予定の帯と、実際の「入庫」「着手」「完了」「出庫」の打刻を同じ時間軸に並べます。</figcaption>
+        </figure>
+      </div>
+    </div>
+
+    <div class="point">
+      <div>
+        <div class="num">POINT 2</div>
+        <h3>車格ごとの車検・点検期日を一瞬で可視化</h3>
+        <p>多数の車両を所有する運送会社様は、車格や用途によって満了期日がバラバラです。</p>
+        <p>TCRMなら、顧客別に満了が近い車両をワンクリックで一覧抽出。未予約の車両を前もって把握・提案できるため、車検の取りこぼしを防止し、工場の入庫平準化を実現します。</p>
+      </div>
+      <div class="shots">
+        <figure>
+          <h4 class="fig-h">未予約の車検対象車両を顧客ごとに抽出し、積極的な入庫アプローチを効率化</h4>
+          <button class="shot" type="button" data-zoom="cust" aria-label="お客様ごとの満了一覧を拡大">
+            <div class="bezel"><img src="img/cust.webp" width="1280" height="710" alt="車両検索の画面。1社で絞り込み、車検満了の近い順に予約なし・確定が並ぶ"></div>
+          </button>
+          <figcaption>お客様ごとの満了一覧：1社で絞ると、車検満了の近い順に「予約なし」「確定」が並びます。</figcaption>
+        </figure>
+        <figure>
+          <h4 class="fig-h">日別・車格別（大型、中型、小型等）の空き枠が一目瞭然！入庫の偏りをなくし、受け入れ台数を最大化</h4>
+          <button class="shot" type="button" data-zoom="calendar" aria-label="スケジュール板を拡大">
+            <div class="bezel"><img src="img/calendar.webp" width="1280" height="525" alt="スケジュール板。2週間の日ごとに車検の予約が車格の色つきで並び、日ごとの台数が出る"></div>
+          </button>
+          <figcaption>スケジュール板：予約状況を日別に一覧表示。車格別の色分けや日ごとの予定台数が視覚的にわかり、空き枠の判定や調整がスムーズに行えます。</figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="safe" aria-labelledby="safe-h">
+  <div class="wrap">
+    <div class="eyebrow">安心材料</div>
+    <h2 class="sec-h" id="safe-h">「入れたのに使われない」にはしません</h2>
+    <div class="assure">
+      <div>
+        <h3>いまの整備ソフトはそのまま（入れ替え不要）</h3>
+        <p>請求処理や帳票出力は、使い慣れた現在の整備ソフトをそのままお使いいただけます。データを連携させ、現場の進捗やスケジュールを管理する画面だけを上乗せして構築します。</p>
+      </div>
+      <div>
+        <h3>一番ITが苦手な人に合わせたシンプル操作</h3>
+        <p>基本操作は「ボタンを押すだけ」。現場の実際の動きに寄り添いながら運用の定着まで一緒にサポートするため、メカニック全員が無理なく使えます。</p>
+      </div>
+      <div>
+        <div class="rate"><small>登録漏れ</small>0<small>台</small></div>
+        <h3>登録漏れ「ゼロ」を実現する高い定着率</h3>
+        <p>導入済みの整備工場では、入庫したすべての車両が漏れなく登録され、リアルタイムに進捗管理されています。「導入したけれど形骸化する」心配はありません。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta" id="contact" aria-labelledby="cta-h">
+  <div class="wrap">
+    <div class="box">
+      <div>
+        <div class="eyebrow">お問い合わせ</div>
+        <h2 class="sec-h" id="cta-h">まずは、工場の話を聞かせてください。</h2>
+        <p class="lead">整備工場様によって、扱われているお車や対応されている作業内容はそれぞれ異なります。まずは御社の現在の状況やお悩みをお聞かせください。</p>
+        <p class="lead">進捗ボードなどの実際の画面をお見せしながら、御社の工場に合わせた具体的な活用方法や導入後のイメージをご案内いたします。</p>
+        <p class="lead">ご相談やデモのご要望など、まずはお気軽にお問い合わせください。</p>
+        <p class="note">※ご紹介者様を通じてご連絡いただいても構いません。</p>
+        <p class="sign">知久 貴洋<small>MotorDX Works</small></p>
+      </div>
+      <div class="mail">
+        <p class="mail-h">メールでのお問い合わせ</p>
+        <a class="btn big" href="mailto:takahiro.chiku@motordxworks.com?subject=TCRM%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6%E3%81%AE%E3%81%8A%E5%95%8F%E3%81%84%E5%90%88%E3%82%8F%E3%81%9B">メールを送る</a>
+        <p class="addr">takahiro.chiku@<wbr>motordxworks.com</p>
+        <p class="note">会社名・お名前・ご連絡先と、ご相談内容をお書き添えください。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">画面は実際に稼働している画面です。社名・登録番号・車台番号・担当者名は加工しています。© MotorDX Works</div>
+</footer>
+
+<dialog class="zoom" id="zoom" aria-label="画面の拡大">
+  <button type="button" id="zoom-close">閉じる</button>
+  <img id="zoom-img" alt="">
+  <p id="zoom-cap"></p>
+</dialog>
+
+<script>
+  const dlg = document.getElementById('zoom');
+  document.querySelectorAll('.shot').forEach((b) => {
+    b.addEventListener('click', () => {
+      const img = b.querySelector('img');
+      document.getElementById('zoom-img').src = img.src;
+      document.getElementById('zoom-img').alt = img.alt;
+      const cap = b.parentElement.querySelector('figcaption');
+      document.getElementById('zoom-cap').textContent = cap ? cap.textContent.trim().replace(/\s+/g, ' ') : '';
+      dlg.showModal();
+    });
+  });
+  document.getElementById('zoom-close').addEventListener('click', () => dlg.close());
+  dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); });
+</script>
+</body>
+</html>

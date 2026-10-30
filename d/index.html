@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<title>資料のご案内 — MotorDX Works</title>
+<style>
+:root{--red:#990000;--navy:#1F4E79;--bg:#F4F5F7;--ink:#14181C;--gray:#686D73;--line:#DDE1E6}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Noto Sans JP","Yu Gothic","Meiryo",sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased}
+header{background:#fff;border-bottom:3px solid var(--red)}
+header .in{max-width:1200px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:16px}
+header .brand{display:block;height:24px;width:auto}
+header .sub{font-size:14px;color:var(--gray)}
+main{max-width:1200px;margin:0 auto;padding:20px 12px 48px}
+.msg{background:#fff;border:1px solid var(--line);border-radius:8px;padding:28px 20px;text-align:center;line-height:1.8;color:var(--gray);font-size:16px}
+.slides{display:flex;flex-direction:column;gap:16px}
+.slides img{display:block;width:100%;height:auto;background:#fff;border:1px solid var(--line);border-radius:6px;box-shadow:0 1px 3px rgba(0,0,0,.06);-webkit-user-drag:none;user-select:none;-webkit-touch-callout:none}
+.slides .ph{aspect-ratio:16/9;background:#fff;border:1px solid var(--line);border-radius:6px}
+footer{text-align:center;font-size:12px;color:var(--gray);padding:0 0 32px}
+</style>
+</head>
+<body>
+<header><div class="in"><img class="brand" src="logo.png" alt="MotorDX Works"><span class="sub">資料のご案内</span></div></header>
+<main>
+  <div id="msg" class="msg">資料を読み込んでいます…</div>
+  <div id="slides" class="slides" hidden></div>
+</main>
+<footer>転載・再配布はご遠慮ください。</footer>
+<script>
+(function () {
+  // 資料リンク GAS（台帳＝営業計画ガントの「資料リンク」）
+  var API = 'https://script.google.com/macros/s/AKfycbzzraEoBA--7KKXmbz9MkfRQA9rex212MhUh2qVSkzx9mynIQceg0rClAAOxMcs7IGi/exec';
+  var k = new URLSearchParams(location.search).get('k') || '';
+  var msg = document.getElementById('msg');
+  var box = document.getElementById('slides');
+  var CLOSED = 'このリンクは公開を終了しました。<br>資料をご希望の方は、お送りした者までご連絡ください。';
+
+  function get(q) {
+    return fetch(API + '?k=' + encodeURIComponent(k) + q).then(function (r) { return r.json(); });
+  }
+
+  document.addEventListener('contextmenu', function (e) { if (e.target.tagName === 'IMG') e.preventDefault(); });
+
+  get('').then(function (res) {
+    if (!res.ok || !res.n) { msg.innerHTML = CLOSED; return; }
+    msg.hidden = true;
+    box.hidden = false;
+    var slots = [];
+    for (var i = 0; i < res.n; i++) {
+      var ph = document.createElement('div');
+      ph.className = 'ph';
+      box.appendChild(ph);
+      slots.push(ph);
+    }
+    // 上から順に読み込み、同時に3枚まで取りに行く
+    var next = 0;
+    function load() {
+      if (next >= res.n) return;
+      var i = next++;
+      get('&p=' + i).then(function (r) {
+        if (r.ok) {
+          var img = new Image();
+          img.alt = (i + 1) + '枚目';
+          img.src = r.img;
+          slots[i].replaceWith(img);
+        }
+      }).catch(function () {}).then(load);
+    }
+    load(); load(); load();
+  }).catch(function () {
+    msg.innerHTML = '資料を読み込めませんでした。時間をおいて、もう一度お開きください。';
+  });
+})();
+</script>
+</body>
+</html>
